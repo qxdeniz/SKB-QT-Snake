@@ -94,10 +94,6 @@ void GameField::GameOver()
     delete moveSnakeTimer;
     delete gameSnake;
 
-
-
-
-
 }
 
 void GameField::StartNewGame()
@@ -141,6 +137,7 @@ void GameField::MoveSnakeSlot()
         newSnakeItem = new SnakeItems(gameSnake -> snakeBody[0] -> snake_x, gameSnake -> snakeBody[0] -> snake_y + 1);
     }
 
+
     if (newSnakeItem -> snake_x >= fieldSize){
         GameOver();
     } else if (newSnakeItem -> snake_x < 0){
@@ -149,7 +146,16 @@ void GameField::MoveSnakeSlot()
         GameOver();
     } else if (newSnakeItem -> snake_y >= fieldSize){
         GameOver();
+    } else {
+        for (int i = 0; i < gameSnake -> snakeBody.size(); i++){
+            if (newSnakeItem -> snake_x == gameSnake -> snakeBody[i] -> snake_x && newSnakeItem -> snake_y == gameSnake -> snakeBody[i] -> snake_y){
+                GameOver();
+            }
+        }
     }
+
+
+
 
     if (newSnakeItem -> snake_x == food -> snake_x && newSnakeItem -> snake_y == food -> snake_y){
         gameScore++;
@@ -165,6 +171,8 @@ void GameField::MoveSnakeSlot()
     repaint();
 
 }
+
+
 
 SnakeItems::SnakeItems(int x, int y)
 {

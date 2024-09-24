@@ -64,6 +64,8 @@ private:
      void GameOver();
      void StartNewGame();
      void CreateFood();
+     bool crashSnake(const QList<SnakeItems*> newSnakeBody);
+
 
 private slots:
      void MoveSnakeSlot();
