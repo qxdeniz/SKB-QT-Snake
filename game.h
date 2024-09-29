@@ -1,11 +1,7 @@
 #ifndef GAME_H
 #define GAME_H
 #include <QWidget>
-#include <QPainter>
-#include <QList>
-#include <QTimer>
-#include <QKeyEvent>
-#include <QRandomGenerator>
+
 
 class SnakeItems;
 class Snake;
@@ -48,6 +44,7 @@ class GameField: public QWidget
      Q_OBJECT
 public:
      GameField();
+
 protected:
     void paintEvent(QPaintEvent *e) override;
     void keyPressEvent(QKeyEvent *e) override;
@@ -65,6 +62,7 @@ private:
      void StartNewGame();
      void CreateFood();
      bool crashSnake(const QList<SnakeItems*> newSnakeBody);
+     QList<QString> snakeMoves;
 
 
 private slots:

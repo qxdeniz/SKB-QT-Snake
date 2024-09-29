@@ -1,5 +1,9 @@
 #include "game.h"
-
+#include <QPainter>
+#include <QList>
+#include <QTimer>
+#include <QKeyEvent>
+#include <QRandomGenerator>
 
 GameField::GameField()
 {
@@ -43,30 +47,32 @@ void GameField::paintEvent(QPaintEvent *e)
 
 void GameField::keyPressEvent(QKeyEvent *e)
 {
-    if (e -> key() == Qt::Key_Right || e -> key() == Qt::Key_D){
-        gameSnake -> snakeMoveDirection = Snake::SnakeMoveDirection::right;
-    } else if (e -> key() == Qt::Key_Left || e -> key() == Qt::Key_A){
-        gameSnake -> snakeMoveDirection = Snake::SnakeMoveDirection::left;
-    } else if (e -> key() == Qt::Key_Down || e -> key() == Qt::Key_S){
-        gameSnake -> snakeMoveDirection = Snake::SnakeMoveDirection::down;
-    } else if (e -> key() == Qt::Key_Up || e -> key() == Qt::Key_W){
-        gameSnake -> snakeMoveDirection = Snake::SnakeMoveDirection::up;
-    } else if (e -> key() == Qt::Key_Space){
-        if (isGameOnPause){
-            isGameOnPause = false;
-        } else {
-            isGameOnPause = true;
-        }
+    Snake::SnakeMoveDirection currentDirection = gameSnake->snakeMoveDirection;
 
+    if ((e->key() == Qt::Key_Right || e->key() == Qt::Key_D) && currentDirection != Snake::SnakeMoveDirection::left){
+        gameSnake->snakeMoveDirection = Snake::SnakeMoveDirection::right;
+    }
+    else if ((e->key() == Qt::Key_Left || e->key() == Qt::Key_A) && currentDirection != Snake::SnakeMoveDirection::right){
+        gameSnake->snakeMoveDirection = Snake::SnakeMoveDirection::left;
+    }
+    else if ((e->key() == Qt::Key_Down || e->key() == Qt::Key_S) && currentDirection != Snake::SnakeMoveDirection::up){
+        gameSnake->snakeMoveDirection = Snake::SnakeMoveDirection::down;
+    }
+    else if ((e->key() == Qt::Key_Up || e->key() == Qt::Key_W) && currentDirection != Snake::SnakeMoveDirection::down){
+        gameSnake->snakeMoveDirection = Snake::SnakeMoveDirection::up;
+    }
+    else if (e->key() == Qt::Key_Space){
         if (gameStatus){
             StartNewGame();
             return;
+        } else {
+            isGameOnPause = !isGameOnPause;
+            setGameOnPause(isGameOnPause);
         }
-        setGameOnPause(isGameOnPause);
+
     }
-
-
 }
+
 
 void GameField::setGameOnPause(bool isGameOnPause)
 {
@@ -105,6 +111,7 @@ void GameField::StartNewGame()
     gameStatus = false;
     isGameOnPause = false;
     connect(moveSnakeTimer, &QTimer::timeout, this, &GameField::MoveSnakeSlot);
+    snakeMoves.append("right");
     moveSnakeTimer -> start(100);
 
 }
@@ -126,51 +133,49 @@ void GameField::CreateFood()
 
 void GameField::MoveSnakeSlot()
 {
-    SnakeItems *newSnakeItem;
-    if (gameSnake -> snakeMoveDirection == Snake::SnakeMoveDirection::right){
-        newSnakeItem = new SnakeItems(gameSnake -> snakeBody[0] -> snake_x + 1, gameSnake -> snakeBody[0] -> snake_y);
-    } else if (gameSnake -> snakeMoveDirection == Snake::SnakeMoveDirection::left){
-        newSnakeItem = new SnakeItems(gameSnake -> snakeBody[0] -> snake_x - 1, gameSnake -> snakeBody[0] -> snake_y);
-    } else if (gameSnake -> snakeMoveDirection == Snake::SnakeMoveDirection::up){
-        newSnakeItem = new SnakeItems(gameSnake -> snakeBody[0] -> snake_x, gameSnake -> snakeBody[0] -> snake_y - 1);
-    } else if (gameSnake -> snakeMoveDirection == Snake::SnakeMoveDirection::down){
-        newSnakeItem = new SnakeItems(gameSnake -> snakeBody[0] -> snake_x, gameSnake -> snakeBody[0] -> snake_y + 1);
+    SnakeItems *newSnakeItem = nullptr;
+    Snake::SnakeMoveDirection currentDirection = gameSnake->snakeMoveDirection;
+
+    if (currentDirection == Snake::SnakeMoveDirection::right){
+        newSnakeItem = new SnakeItems(gameSnake->snakeBody[0]->snake_x + 1, gameSnake->snakeBody[0]->snake_y);
+    }
+    else if (currentDirection == Snake::SnakeMoveDirection::left){
+        newSnakeItem = new SnakeItems(gameSnake->snakeBody[0]->snake_x - 1, gameSnake->snakeBody[0]->snake_y);
+    }
+    else if (currentDirection == Snake::SnakeMoveDirection::up){
+        newSnakeItem = new SnakeItems(gameSnake->snakeBody[0]->snake_x, gameSnake->snakeBody[0]->snake_y - 1);
+    }
+    else if (currentDirection == Snake::SnakeMoveDirection::down){
+        newSnakeItem = new SnakeItems(gameSnake->snakeBody[0]->snake_x, gameSnake->snakeBody[0]->snake_y + 1);
     }
 
 
-    if (newSnakeItem -> snake_x >= fieldSize){
+    if (newSnakeItem->snake_x >= fieldSize || newSnakeItem->snake_x < 0 ||
+        newSnakeItem->snake_y >= fieldSize || newSnakeItem->snake_y < 0){
         GameOver();
-    } else if (newSnakeItem -> snake_x < 0){
-        GameOver();
-    } else if (newSnakeItem -> snake_y < 0){
-        GameOver();
-    } else if (newSnakeItem -> snake_y >= fieldSize){
-        GameOver();
-    } else {
-        for (int i = 0; i < gameSnake -> snakeBody.size(); i++){
-            if (newSnakeItem -> snake_x == gameSnake -> snakeBody[i] -> snake_x && newSnakeItem -> snake_y == gameSnake -> snakeBody[i] -> snake_y){
+    }
+    else {
+        for (int i = 0; i < gameSnake->snakeBody.size(); i++){
+            if (newSnakeItem->snake_x == gameSnake->snakeBody[i]->snake_x && newSnakeItem->snake_y == gameSnake->snakeBody[i]->snake_y){
                 GameOver();
             }
         }
     }
 
-
-
-
-    if (newSnakeItem -> snake_x == food -> snake_x && newSnakeItem -> snake_y == food -> snake_y){
+    if (newSnakeItem->snake_x == food->snake_x && newSnakeItem->snake_y == food->snake_y){
         gameScore++;
         CreateFood();
         QString helpText = "Счёт: " + QString::number(gameScore) + "\nПауза - ПРОБЕЛ";
         emit ChangeTextInHelpField(helpText);
     } else {
-        gameSnake -> snakeBody.removeLast();
+        gameSnake->snakeBody.removeLast();
     }
 
-    gameSnake -> snakeBody.insert(0, newSnakeItem);
+    gameSnake->snakeBody.insert(0, newSnakeItem);
 
     repaint();
-
 }
+
 
 
 
@@ -183,13 +188,14 @@ SnakeItems::SnakeItems(int x, int y)
 
 Snake::Snake()
 {
-    m_snakeBeginSize = 1;
+    m_snakeBeginSize = 2;
     for (int i = 0; i < m_snakeBeginSize; i++)
     {
         snakeBody.insert(0, new SnakeItems(i, 0));
     }
 
     snakeMoveDirection = SnakeMoveDirection::right;
+
 
 
 }

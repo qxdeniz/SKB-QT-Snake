@@ -12,6 +12,10 @@ class MainWindow;
 }
 QT_END_NAMESPACE
 
+class GameField;
+class Help;
+
+
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
