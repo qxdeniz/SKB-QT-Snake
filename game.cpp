@@ -153,11 +153,13 @@ void GameField::MoveSnakeSlot()
     if (newSnakeItem->snake_x >= fieldSize || newSnakeItem->snake_x < 0 ||
         newSnakeItem->snake_y >= fieldSize || newSnakeItem->snake_y < 0){
         GameOver();
+        delete newSnakeItem;
     }
     else {
         for (int i = 0; i < gameSnake->snakeBody.size(); i++){
             if (newSnakeItem->snake_x == gameSnake->snakeBody[i]->snake_x && newSnakeItem->snake_y == gameSnake->snakeBody[i]->snake_y){
                 GameOver();
+                delete newSnakeItem;
             }
         }
     }
