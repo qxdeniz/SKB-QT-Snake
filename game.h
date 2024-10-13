@@ -9,11 +9,11 @@ class GameField;
 
 class SnakeItems
 {
-    friend Snake;
-    friend GameField;
 public:
     SnakeItems(int x, int y);
-private:
+    int getX() const {return snake_x;}
+    int getY() const {return snake_y;}
+protected:
     int snake_x;
     int snake_y;
 };
@@ -21,12 +21,10 @@ private:
 
 class Snake
 {
-    friend GameField;
+    //friend GameField;
+
 public:
     Snake();
-private:
-    QList<SnakeItems*> snakeBody;
-    int m_snakeBeginSize;
     enum SnakeMoveDirection
     {
         up,
@@ -34,6 +32,15 @@ private:
         down,
         right
     };
+    QList<SnakeItems*>& getSnakeBody() { return snakeBody; }
+    void setSnakeBody(QList<SnakeItems*>& body) { snakeBody = body; }
+    SnakeMoveDirection getMoveDirection() const { return snakeMoveDirection; }
+    void setMoveDirection(SnakeMoveDirection direction) { snakeMoveDirection = direction; }
+    QList<SnakeItems*> snakeBody;
+private:
+
+    int m_snakeBeginSize;
+
     SnakeMoveDirection snakeMoveDirection;
 
 
@@ -61,8 +68,8 @@ private:
      void GameOver();
      void StartNewGame();
      void CreateFood();
-     bool crashSnake(const QList<SnakeItems*> newSnakeBody);
-     QList<QString> snakeMoves;
+     bool crashSnake(QList<SnakeItems*> newSnakeBody);
+
 
 
 private slots:
